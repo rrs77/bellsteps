@@ -32,6 +32,13 @@ export default async function AdminSeedPage() {
           This action cannot be undone.
         </p>
 
+        <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+          <p className="text-sm text-yellow-800 font-semibold mb-2">⚠️ Important:</p>
+          <p className="text-sm text-yellow-700">
+            Make sure you've run migrations first! Visit <a href="/admin/migrate" className="underline font-semibold">/admin/migrate</a> to create the database tables.
+          </p>
+        </div>
+
         <form action={seedDatabase}>
           <button
             type="submit"

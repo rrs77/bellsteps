@@ -285,6 +285,11 @@ const adapter = {
   },
 };
 
+// Validate required environment variables
+if (!process.env.NEXTAUTH_SECRET) {
+  console.warn('⚠️ NEXTAUTH_SECRET is not set. Auth may not work correctly.');
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers,
   adapter,
@@ -313,4 +318,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: 'jwt', // Required for Credentials provider
   },
+  secret: process.env.NEXTAUTH_SECRET,
 });
