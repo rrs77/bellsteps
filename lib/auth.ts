@@ -10,10 +10,15 @@ const providers = [
       email: { label: 'Email', type: 'email' },
     },
     async authorize(credentials) {
-      if (!credentials?.email) return null;
+      if (!credentials?.email) {
+        console.error('No email provided');
+        return null;
+      }
       const email = credentials.email as string;
       
       try {
+        console.log('Attempting to authorize user:', email);
+        
         // Find or create user
         let user = await sql.query(
           `SELECT * FROM users WHERE email = $1`,
@@ -21,30 +26,45 @@ const providers = [
         );
         
         if (user.rows.length === 0) {
+          console.log('User not found, creating new user:', email);
           // Create user
           const result = await sql.query(
             `INSERT INTO users (id, email, email_verified, created_at, updated_at)
-             VALUES (gen_random_uuid(), $1, true, now(), now())
+             VALUES (gen_random_uuid()::text, $1, true, now(), now())
              RETURNING *`,
             [email]
           );
+          
+          if (result.rows.length === 0) {
+            console.error('Failed to create user');
+            return null;
+          }
+          
+          console.log('User created successfully:', result.rows[0].id);
           return {
             id: result.rows[0].id,
             email: result.rows[0].email,
           };
         }
         
+        console.log('User found:', user.rows[0].id);
         return {
           id: user.rows[0].id,
           email: user.rows[0].email,
         };
       } catch (error: any) {
         console.error('Auth error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          code: error.code,
+          stack: error.stack,
+        });
         // If database connection fails, throw a more helpful error
         if (error.code === 'ECONNREFUSED' || error.message?.includes('connection') || error.message?.includes('POSTGRES_URL')) {
-          throw new Error('Database not connected. Please start PostgreSQL and run migrations. See README for setup instructions.');
+          throw new Error('Database not connected. Please check POSTGRES_URL environment variable.');
         }
-        return null;
+        // Re-throw the error so NextAuth can handle it properly
+        throw error;
       }
     },
   })
