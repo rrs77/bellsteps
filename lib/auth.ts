@@ -287,7 +287,16 @@ const adapter = {
 
 // Validate required environment variables
 if (!process.env.NEXTAUTH_SECRET) {
-  console.warn('⚠️ NEXTAUTH_SECRET is not set. Auth may not work correctly.');
+  throw new Error('NEXTAUTH_SECRET is not set. Please add it to your environment variables.');
+}
+
+if (!process.env.NEXTAUTH_URL) {
+  console.warn('⚠️ NEXTAUTH_URL is not set. This may cause issues in production.');
+}
+
+// Ensure providers array is not empty
+if (!providers || providers.length === 0) {
+  throw new Error('No authentication providers configured.');
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -319,4 +328,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: 'jwt', // Required for Credentials provider
   },
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true, // Required for Vercel deployments
 });
