@@ -306,18 +306,32 @@ const adapter = {
 };
 
 // Validate required environment variables
-if (!process.env.NEXTAUTH_SECRET) {
+const requiredEnvVars = {
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+};
+
+if (!requiredEnvVars.NEXTAUTH_SECRET) {
+  console.error('❌ NEXTAUTH_SECRET is not set!');
   throw new Error('NEXTAUTH_SECRET is not set. Please add it to your environment variables.');
 }
 
-if (!process.env.NEXTAUTH_URL) {
+if (!requiredEnvVars.NEXTAUTH_URL) {
   console.warn('⚠️ NEXTAUTH_URL is not set. This may cause issues in production.');
 }
 
 // Ensure providers array is not empty
 if (!providers || providers.length === 0) {
+  console.error('❌ No authentication providers configured!');
   throw new Error('No authentication providers configured.');
 }
+
+console.log('✅ NextAuth configuration:', {
+  hasSecret: !!requiredEnvVars.NEXTAUTH_SECRET,
+  hasUrl: !!requiredEnvVars.NEXTAUTH_URL,
+  providerCount: providers.length,
+  trustHost: true,
+});
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers,
